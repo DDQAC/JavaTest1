@@ -3,6 +3,8 @@ package com.qa.testdrivendevelopment;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Questions {
 	/**
@@ -225,45 +227,44 @@ public class Questions {
 	 * False validCard("4012345678901234") → True
 	 */
 	public boolean validCard(String cardNumber) {
-		char[] chars = cardNumber.toCharArray();
-		char firstChar = chars[0];
-		if (firstChar == 4 || firstChar == 5 || firstChar == 6) {
-			if (chars.length == 16) {
-				if (chars.toString().matches("[0-9]+")) {
-					if (chars.toString().matches("/(\\d)\\1{4,}/")) {
-						return false;
-					} else {
-						return true;
-					}
-				} else {
+		String[] noHyphens = cardNumber.split("-");
+		String cardNumberNoHyphens = "";
+		if (noHyphens.length == 1) {
+			cardNumberNoHyphens = cardNumber;
+		} else if (noHyphens.length == 4) {
+			for (String chunk : noHyphens) {
+				if (chunk.length() != 4) {
 					return false;
-				}
-			} else if (chars.length == 19) {
-				String[] hyphenSeparated = cardNumber.split("-");
-				for (String group : hyphenSeparated) {
-					if (group.length() != 4) {
-						return false;
-					}
-				}
-				chars = hyphenSeparated.toString().toCharArray();
-				if (chars.length == 16) {
-					if (chars.toString().matches("[0-9]+")) {
-						if (chars.toString().contains("/(\\d)\\1{4,}/")) {
-							return false;
-						} else {
-							return true;
-						}
-					} else {
-						return false;
-					}
 				} else {
-					return false;
+					cardNumberNoHyphens = cardNumberNoHyphens.concat(chunk);
 				}
-			} else {
-				return false;
 			}
 		} else {
 			return false;
 		}
+
+		if (!cardNumberNoHyphens.matches("[0-9]+")) {
+			return false;
+		}
+
+		if (cardNumberNoHyphens.length() != 16) {
+			return false;
+		}
+
+		if (!cardNumberNoHyphens.startsWith("4")) {
+			if (!cardNumberNoHyphens.startsWith("5")) {
+				if (!cardNumberNoHyphens.startsWith("6")) {
+					return false;
+				}
+			}
+		}
+
+		Pattern moreThan3ConsRepDigits = Pattern.compile("(\\d)\\1{3,}");
+		Matcher matcher = moreThan3ConsRepDigits.matcher(cardNumberNoHyphens);
+		if (matcher.find()) {
+			return false;
+		}
+
+		return true;
 	}
 }
